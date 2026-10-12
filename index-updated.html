@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Informacje o bezpłatnych warsztatach fikcyjnego Koła oraz prosty kalkulator kartek do druku.">
+  <title>Koło — warsztaty dla początkujących</title>
+  <style>
+    :root {
+      /* Paleta zaczerpnięta z plakatu: kremowy papier, zieleń roślin i granat laptopa. */
+      --paper: #fffaf0;
+      --paper-light: #fffdf8;
+      --ink: #253448;
+      --pencil: #6c6c62;
+      --line: #e0c9aa;
+      --accent: #d8e8d2;
+      --accent-ink: #2d5b3b;
+      --navy: #20364f;
+      --leaf: #4f8b50;
+      --peach: #f8e6d0;
+      --sun: #f6d58b;
+      --error: #9c3e32;
+      --radius: 12px;
+      --content: 1080px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: #f5e7d4;
+      background-image: radial-gradient(#d8c1a2 0.45px, transparent 0.45px);
+      background-size: 8px 8px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(calc(100% - 32px), var(--content));
+      margin: 28px auto;
+      background: var(--paper);
+      border: 1px solid #e3c9a8;
+      border-radius: 18px;
+      box-shadow: 0 14px 38px rgb(83 59 32 / 12%);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Delikatna faktura przypomina papier, ale nie utrudnia czytania. */
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .18;
+      background: radial-gradient(ellipse at 12% 20%, #f5d7b7 0, transparent 30%), repeating-linear-gradient(0deg, transparent 0 6px, rgb(80 70 50 / 2%) 6px 7px);
+    }
+    .page > * { position: relative; }
+
+    .site-header {
+      padding: clamp(24px, 5vw, 48px) clamp(20px, 5vw, 56px) 28px;
+      border-bottom: 2px solid var(--line);
+      background: linear-gradient(110deg, #fffaf0, #fff3e3);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .logo-mark { width: 66px; flex: 0 0 66px; color: var(--pencil); }
+    .logo-mark svg { width: 100%; height: auto; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--navy);
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      letter-spacing: .015em;
+      line-height: 1.1;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+    .tagline { margin: 0; color: #5d5a53; font-size: clamp(1rem, 2vw, 1.15rem); }
+
+    main { padding: 0 clamp(18px, 4vw, 44px); }
+    .workshop-intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(230px, .8fr);
+      gap: clamp(24px, 5vw, 54px);
+      align-items: center;
+      padding: clamp(28px, 5vw, 48px) 0;
+      border-bottom: 2px solid var(--line);
+    }
+    h2 {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--navy);
+      font-size: clamp(1.55rem, 3.3vw, 2.2rem);
+      line-height: 1.2;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .intro-copy p { max-width: 62ch; }
+    .meta-note {
+      display: inline-block;
+      border-left: 4px solid var(--leaf);
+      padding: 10px 14px;
+      color: #4e5c4b;
+      background: #f3f5e9;
+      border-radius: 0 10px 10px 0;
+      margin: 4px 0 0;
+    }
+    .poster-frame {
+      margin: 0;
+      border: 1.5px solid #e3c9a8;
+      padding: 10px;
+      border-radius: 15px;
+      background: var(--paper-light);
+      box-shadow: 0 8px 20px rgb(73 54 32 / 9%);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .poster-frame:hover { transform: translateY(-3px); box-shadow: 0 13px 25px rgb(73 54 32 / 14%); }
+    .poster-placeholder {
+      min-height: 220px;
+      padding: 24px 15px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed #d4b995;
+      border-radius: 10px;
+      color: var(--navy);
+      background: repeating-linear-gradient(135deg, #fffaf0, #fffaf0 8px, #f8eddd 8px, #f8eddd 16px);
+    }
+    .poster-placeholder svg { width: 100px; height: 82px; margin-bottom: 8px; }
+    .poster-placeholder strong { display: block; font: 600 1.7rem Georgia, serif; }
+    .poster-placeholder span { font-size: .92rem; }
+    .poster-frame img { display: block; width: 100%; height: auto; }
+    figcaption { margin-top: 8px; font-size: .8rem; color: var(--pencil); text-align: center; }
+
+    .section { padding: clamp(28px, 5vw, 44px) 0; border-bottom: 2px solid var(--line); }
+    .section-lead { color: #666158; margin-top: -7px; margin-bottom: 20px; }
+    .table-wrap { overflow-x: auto; border: 1px solid #e0c9aa; border-radius: 12px; background: rgb(255 253 247 / 78%); }
+    table { width: 100%; border-collapse: collapse; min-width: 520px; }
+    th, td { padding: 11px 15px; text-align: left; border-bottom: 1px solid var(--line); }
+    th { font-weight: 700; color: var(--navy); background: #e8f0df; }
+    th:not(:first-child), td:not(:first-child) { text-align: center; }
+    tbody tr { transition: background-color .2s ease; }
+    tbody tr:hover { background: #f6eddb; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tfoot { font-weight: 700; color: var(--navy); background: #f8e8cf; }
+
+    .calculator {
+      padding: clamp(18px, 3vw, 28px);
+      border: 1.5px solid #e0c9aa;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #fffaf0, #fff4e5);
+    }
+    .calculator h2 { margin-bottom: 8px; }
+    .calculator-intro { margin-bottom: 22px; color: #625e56; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end; }
+    label { display: block; font-weight: 600; margin-bottom: 7px; }
+    input {
+      width: 100%; min-height: 46px; padding: 10px 12px;
+      border: 1.5px solid #d4bea0; border-radius: 8px;
+      color: var(--ink); background: #fffdf8; font: inherit;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #758d78; outline-offset: 3px; }
+    input:focus { border-color: var(--leaf); box-shadow: 0 0 0 3px rgb(79 139 80 / 17%); }
+    button {
+      min-height: 46px; padding: 10px 20px; border: 1.5px solid #7fa17a;
+      border-radius: 9px; background: var(--accent); color: var(--accent-ink);
+      font: inherit; font-weight: 700; cursor: pointer;
+      transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
+    }
+    button:hover { background: #c8dfbf; box-shadow: 0 3px 0 #91b08a; transform: translateY(-1px); }
+    button:active { transform: translateY(1px); box-shadow: none; }
+    .result {
+      margin: 20px 0 0; padding: 12px 14px; border-left: 4px solid #d3b47a;
+      border-radius: 0 9px 9px 0; min-height: 48px; background: #fff1d7;
+    }
+    .result[data-state="success"] { border-left-color: var(--leaf); background: #edf5e7; }
+    .result[data-state="error"] { border-left-color: var(--error); background: #f7ece8; color: var(--error); }
+    .result-pop { animation: result-in .28s ease-out; }
+
+    footer { padding: 22px clamp(18px, 4vw, 44px) 26px; text-align: center; color: #5d5951; font-size: .9rem; }
+    footer p { margin: 0 0 5px; }
+    footer p:last-child { margin-bottom: 0; }
+    .author { font-weight: 700; color: var(--ink); }
+
+    /* Animacje wejścia są krótkie i jednorazowe — pomagają zauważyć sekcje, nie walczą z treścią. */
+    .reveal { opacity: 0; transform: translateY(12px); animation: reveal-in .55s ease-out forwards; }
+    .delay-1 { animation-delay: .08s; }
+    .delay-2 { animation-delay: .16s; }
+    .delay-3 { animation-delay: .24s; }
+    @keyframes reveal-in { to { opacity: 1; transform: translateY(0); } }
+    @keyframes result-in { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+
+    /* Rezerwacja miejsc: biurka są małymi, czytelnymi ikonami stanowisk. */
+    .booking-panel {
+      padding: clamp(18px, 3vw, 30px);
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(145deg, #fffaf0, #fff1df);
+      overflow: hidden;
+    }
+    .booking-panel h2 { margin-bottom: 8px; }
+    .booking-lead { color: #625e56; margin-bottom: 20px; }
+    .booking-details {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .booking-details label { margin-bottom: 7px; }
+    .booking-details input { background: #fffdf8; }
+    .booking-status {
+      display: flex; flex-wrap: wrap; gap: 12px 18px;
+      align-items: center; margin: 0 0 16px; color: #5d5951; font-size: .92rem;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid #cbb99f; display: inline-block; }
+    .legend-free { background: #fffdf8; }
+    .legend-selected { background: #d8e8d2; border-color: #6f9c70; }
+    .legend-taken { background: #e7ddd0; border-color: #bcae9c; }
+    .room-stage {
+      position: relative;
+      border: 1px dashed #d4b995; border-radius: 14px; padding: 18px;
+      background: radial-gradient(ellipse at top, #fffdf8, #f7ead8);
+      overflow: hidden;
+      cursor: none;
+    }
+    .room-title {
+      width: min(300px, 85%); margin: 0 auto 24px; padding: 9px 14px;
+      text-align: center; color: var(--navy); font-weight: 700;
+      border: 1.5px solid #d4bea0; border-radius: 9px;
+      background: #f5e5cd; letter-spacing: .08em; font-size: .8rem;
+    }
+    .seat-grid {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(10px, 2vw, 22px) clamp(8px, 2vw, 18px);
+      max-width: 760px; margin: 0 auto;
+    }
+    .seat {
+      position: relative; min-width: 0; min-height: 124px; padding: 8px 5px 3px;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      gap: 6px; border: 1px solid transparent; border-radius: 12px;
+      background: transparent; color: var(--ink); cursor: none; width: 100%;
+      transition: background .2s ease, border-color .2s ease, transform .2s ease;
+    }
+    .seat:hover:not(:disabled) { background: rgb(255 253 248 / 75%); border-color: #d7c2a5; transform: translateY(-2px); box-shadow: none; }
+    .seat:focus-visible { cursor: pointer; outline: 3px solid #758d78; outline-offset: 2px; }
+    .seat:disabled { cursor: not-allowed; opacity: .62; }
+    .desk {
+      position: relative; width: min(100%, 126px); height: 63px; flex: 0 0 63px;
+      border: 1.5px solid #bca17f; border-radius: 7px;
+      background: linear-gradient(145deg, #f7d9ad, #eac18b);
+      box-shadow: 0 4px 0 #d6b182, 0 6px 10px rgb(86 61 35 / 9%);
+      transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .monitor {
+      position: absolute; width: 39px; height: 25px; left: 50%; top: 6px;
+      transform: translateX(-50%); border: 3px solid #35485e; border-radius: 4px;
+      background: #20364f;
+    }
+    .monitor::before { content: "</>"; display: grid; place-items: center; color: #8ac7ee; font: 700 8px monospace; height: 100%; }
+    .monitor::after { content: ""; position: absolute; width: 13px; height: 4px; bottom: -7px; left: 10px; background: #53667a; }
+    .keyboard {
+      position: absolute; left: calc(50% - 27px); bottom: 7px; width: 43px; height: 8px;
+      border: 1px solid #8e9baa; border-radius: 2px;
+      background: repeating-linear-gradient(90deg, #cbd1d5 0 3px, #8492a0 3px 4px);
+    }
+    .mouse {
+      position: absolute; right: 10px; bottom: 7px; width: 9px; height: 13px;
+      border: 1px solid #6c7a87; border-radius: 50% 50% 45% 45%; background: #f7f0e4;
+    }
+    .chair {
+      position: relative; width: 32px; height: 20px; margin-top: 4px;
+      border: 2px solid #718a70; border-radius: 8px 8px 5px 5px;
+      background: #d8e5d0;
+    }
+    .chair::before { content: ""; position: absolute; left: 4px; right: 4px; top: -6px; height: 7px; border: 2px solid #718a70; border-bottom: 0; border-radius: 6px 6px 0 0; }
+    .chair::after { content: ""; position: absolute; width: 2px; height: 5px; left: 5px; bottom: -6px; background: #718a70; box-shadow: 18px 0 #718a70; }
+    .seat-label { font-size: .82rem; font-weight: 700; line-height: 1.2; }
+    .seat.selected .desk { background: linear-gradient(145deg, #dcebd4, #bcd8b3); border-color: #568457; box-shadow: 0 4px 0 #9fbd96, 0 0 0 3px rgb(79 139 80 / 15%); }
+    .seat.selected .chair { background: #a9c99f; border-color: #4f8b50; }
+    .seat.taken .desk { background: linear-gradient(145deg, #e7ded2, #d2c5b4); border-color: #b7a894; box-shadow: 0 4px 0 #c5b6a3; }
+    .seat.taken .chair { background: #d3c8ba; border-color: #b1a28f; }
+    .seat.taken .monitor { background: #555e68; border-color: #68717b; }
+    .seat.taken .seat-label::after { content: " · zajęte"; color: #8b4a3f; font-weight: 500; }
+    .seat.selected .seat-label::after { content: " · wybrane"; color: var(--accent-ink); font-weight: 500; }
+    .booking-summary {
+      margin: 20px 0 0; padding: 15px 16px; border-radius: 10px;
+      border: 1px solid #d9c5a8; background: #fffaf0;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .booking-summary p { margin: 0; }
+    .booking-summary strong { color: var(--navy); }
+    .booking-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .booking-actions button { width: auto; }
+    .booking-actions .secondary { background: #fffdf8; border-color: #d4bea0; color: var(--ink); }
+    .booking-message { min-height: 28px; margin: 12px 0 0; color: #4f6f4d; font-weight: 600; }
+    .booking-message[data-state="error"] { color: var(--error); }
+    .stick-cursor {
+      position: absolute; z-index: 5; width: 72px; height: 94px; left: 0; top: 0;
+      pointer-events: none; overflow: visible; opacity: 0; transform: translate(-100px, -100px);
+      filter: drop-shadow(0 2px 1px rgb(37 52 72 / 10%));
+    }
+    .stick-cursor .limb { stroke: var(--navy); stroke-width: 3.3; stroke-linecap: round; fill: none; }
+    .stick-cursor .head { fill: #f6d58b; stroke: var(--navy); stroke-width: 3; }
+    .room-stage.cursor-active .stick-cursor { opacity: 1; }
+    .room-stage.cursor-active, .room-stage.cursor-active .seat { cursor: none; }
+    @media (max-width: 560px) {
+      .booking-details { grid-template-columns: 1fr; }
+      .room-stage { padding: 12px 6px; }
+      .seat-grid { gap: 8px 3px; }
+      .seat { min-height: 104px; padding-inline: 1px; }
+      .desk { height: 49px; flex-basis: 49px; }
+      .monitor { transform: translateX(-50%) scale(.8); top: 3px; }
+      .keyboard { bottom: 5px; transform: scale(.8); }
+      .mouse { bottom: 5px; right: 5px; transform: scale(.8); }
+      .seat-label { font-size: .7rem; }
+      .chair { transform: scale(.85); margin-top: 1px; }
+      .booking-summary { align-items: stretch; }
+      .booking-actions { width: 100%; }
+      .booking-actions button { flex: 1; }
+      .stick-cursor { width: 58px; height: 78px; }
+    }
+    @media (hover: none), (pointer: coarse) {
+      .room-stage, .room-stage .seat { cursor: pointer; }
+      .stick-cursor { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(calc(100% - 16px), var(--content)); margin: 8px auto; }
+      .site-header { gap: 13px; }
+      .logo-mark { width: 48px; flex-basis: 48px; }
+      .workshop-intro { grid-template-columns: 1fr; }
+      .poster-frame { max-width: 360px; width: 100%; margin: 0 auto; }
+      .poster-placeholder { min-height: 190px; }
+      .form-grid { grid-template-columns: 1fr; }
+      button { width: 100%; }
+      th, td { padding: 10px 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header reveal">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 90 65" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="45" cy="15" r="9"/><circle cx="20" cy="23" r="6"/><circle cx="70" cy="23" r="6"/>
+          <path d="M27 54c0-14 7-23 18-23s18 9 18 23M4 53c0-10 5-17 13-17 5 0 8 2 11 7M86 53c0-10-5-17-13-17-5 0-8 2-11 7"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Koło</h1>
+        <p class="tagline">Uczymy się, tworzymy, rozwijamy.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="workshop-intro reveal delay-1" aria-labelledby="workshop-title">
+        <div class="intro-copy">
+          <h2 id="workshop-title">Warsztat HTML</h2>
+          <p>Chcesz zobaczyć, jak powstaje strona internetowa? Na bezpłatnym warsztacie Koła w 60 minut stworzysz pierwszą stronę z nagłówkiem, akapitem i linkiem.</p>
+          <p>Nie musisz nic umieć. Wystarczy komputer z przeglądarką.</p>
+          <p class="meta-note"><strong>Limit:</strong> 16 osób. Termin, miejsce i sposób zapisów: do ustalenia.</p>
+        </div>
+        <figure class="poster-frame">
+          <!-- Jeśli masz gotowy plakat, zapisz go obok index.html jako plakat.png. W przeciwnym razie pokaże się szkic zastępczy. -->
+          <img src="plakat.png" alt="Ilustracja warsztatu przy biurku: laptop z kodem, roślina, kubek kawy, notes i długopis" onerror="this.hidden=true; this.nextElementSibling.hidden=false">
+          <div class="poster-placeholder" hidden>
+            <div>
+              <svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="20" y="8" width="80" height="54" rx="3"/><path d="M10 73h100l-10 8H20zM48 27l-10 8 10 8M72 27l10 8-10 8M65 24l-10 22"/></svg>
+              <strong>HTML</strong><span>Twórz swoje strony WWW!</span>
+            </div>
+          </div>
+          <figcaption>Plakat warsztatu HTML</figcaption>
+        </figure>
+      </section>
+
+      <section class="section reveal delay-2" aria-labelledby="workshops-title">
+        <h2 id="workshops-title">Warsztaty</h2>
+        <p class="section-lead">Aktualna liczba zapisów i wolnych miejsc.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Warsztat</th><th scope="col">Limit</th><th scope="col">Zapisy</th><th scope="col">Wolne miejsca</th></tr></thead>
+            <tbody>
+              <tr><td>Git</td><td>12</td><td>11</td><td>1</td></tr>
+              <tr><td>API</td><td>10</td><td>9</td><td>1</td></tr>
+              <tr><td>HTML</td><td>16</td><td>14</td><td>2</td></tr>
+            </tbody>
+            <tfoot><tr><td>Razem</td><td>38</td><td>34</td><td>4</td></tr></tfoot>
+          </table>
+        </div>
+      </section>
+
+
+      <section class="section reveal delay-3" aria-labelledby="booking-title">
+        <div class="booking-panel">
+          <h2 id="booking-title">Wybierz swoje miejsce</h2>
+          <p class="booking-lead">Kliknij stanowisko, przy którym chcesz usiąść. Każde ma biurko, monitor, klawiaturę, myszkę i krzesło.</p>
+          <div class="booking-details">
+            <div>
+              <label for="event-date">Data warsztatu</label>
+              <input id="event-date" type="date" required>
+            </div>
+            <div>
+              <label for="event-time">Godzina rozpoczęcia</label>
+              <input id="event-time" type="time" required>
+            </div>
+          </div>
+          <div class="booking-status" aria-label="Legenda miejsc">
+            <span class="legend-item"><i class="legend-swatch legend-free"></i> Wolne</span>
+            <span class="legend-item"><i class="legend-swatch legend-selected"></i> Twój wybór</span>
+            <span class="legend-item"><i class="legend-swatch legend-taken"></i> Zajęte przykładowo</span>
+          </div>
+          <div class="room-stage" id="room-stage" aria-label="Plan sali. Wybierz jedno z szesnastu stanowisk.">
+            <div class="room-title">PRZÓD SALI · PROWADZĄCY</div>
+            <div class="seat-grid" id="seat-grid">
+              <button class="seat" type="button" data-seat="A1" aria-pressed="false" aria-label="Miejsce A1, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce A1</span></button>
+              <button class="seat taken" type="button" data-seat="A2" disabled aria-label="Miejsce A2, zajęte przykładowo"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce A2</span></button>
+              <button class="seat" type="button" data-seat="A3" aria-pressed="false" aria-label="Miejsce A3, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce A3</span></button>
+              <button class="seat" type="button" data-seat="A4" aria-pressed="false" aria-label="Miejsce A4, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce A4</span></button>
+              <button class="seat" type="button" data-seat="B1" aria-pressed="false" aria-label="Miejsce B1, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce B1</span></button>
+              <button class="seat" type="button" data-seat="B2" aria-pressed="false" aria-label="Miejsce B2, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce B2</span></button>
+              <button class="seat taken" type="button" data-seat="B3" disabled aria-label="Miejsce B3, zajęte przykładowo"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce B3</span></button>
+              <button class="seat" type="button" data-seat="B4" aria-pressed="false" aria-label="Miejsce B4, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce B4</span></button>
+              <button class="seat" type="button" data-seat="C1" aria-pressed="false" aria-label="Miejsce C1, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce C1</span></button>
+              <button class="seat" type="button" data-seat="C2" aria-pressed="false" aria-label="Miejsce C2, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce C2</span></button>
+              <button class="seat" type="button" data-seat="C3" aria-pressed="false" aria-label="Miejsce C3, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce C3</span></button>
+              <button class="seat" type="button" data-seat="C4" aria-pressed="false" aria-label="Miejsce C4, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce C4</span></button>
+              <button class="seat" type="button" data-seat="D1" aria-pressed="false" aria-label="Miejsce D1, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce D1</span></button>
+              <button class="seat" type="button" data-seat="D2" aria-pressed="false" aria-label="Miejsce D2, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce D2</span></button>
+              <button class="seat" type="button" data-seat="D3" aria-pressed="false" aria-label="Miejsce D3, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce D3</span></button>
+              <button class="seat" type="button" data-seat="D4" aria-pressed="false" aria-label="Miejsce D4, wolne"><span class="desk"><i class="monitor"></i><i class="keyboard"></i><i class="mouse"></i></span><i class="chair"></i><span class="seat-label">Miejsce D4</span></button>
+            </div>
+            <svg class="stick-cursor" id="stick-cursor" viewBox="0 0 72 94" aria-hidden="true">
+              <circle class="head" cx="36" cy="15" r="9"/>
+              <path class="limb" id="stick-torso" d="M36 25 L36 54"/>
+              <path class="limb" id="stick-left-arm" d="M36 32 L22 43 L15 54"/>
+              <path class="limb" id="stick-right-arm" d="M36 32 L50 43 L57 54"/>
+              <path class="limb" id="stick-left-leg" d="M36 54 L25 70 L22 86"/>
+              <path class="limb" id="stick-right-leg" d="M36 54 L47 70 L51 86"/>
+            </svg>
+          </div>
+          <div class="booking-summary">
+            <p><strong>Wybrane miejsce:</strong> <span id="chosen-seat">Nie wybrano</span><br><strong>Termin:</strong> <span id="chosen-datetime">Wybierz datę i godzinę</span></p>
+            <div class="booking-actions">
+              <button type="button" id="reserve-seat">Zapisz wybór</button>
+              <button type="button" class="secondary" id="clear-seat">Wyczyść</button>
+            </div>
+          </div>
+          <p class="booking-message" id="booking-message" role="status" aria-live="polite">Wybierz miejsce, datę i godzinę. Wybór zostanie zapamiętany w tej przeglądarce.</p>
+        </div>
+      </section>
+
+      <section class="section reveal delay-3" aria-labelledby="calculator-title">
+        <div class="calculator">
+          <h2 id="calculator-title">Kalkulator kartek do druku</h2>
+          <p class="calculator-intro">Podaj liczbę uczestników i liczbę kartek dla jednej osoby.</p>
+          <form id="paper-form" novalidate>
+            <div class="form-grid">
+              <div>
+                <label for="participants">Liczba uczestników (0–16)</label>
+                <input id="participants" name="participants" type="number" min="0" max="16" step="1" inputmode="numeric" required>
+              </div>
+              <div>
+                <label for="sheets">Kartki na osobę (więcej niż 0)</label>
+                <input id="sheets" name="sheets" type="number" min="1" step="1" inputmode="numeric" required>
+              </div>
+              <button type="submit">Oblicz</button>
+            </div>
+            <p id="result" class="result" role="status" aria-live="polite">Wynik pojawi się tutaj.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Koło jest fikcyjne. Strona powstała z pomocą AI na kursie Praktyczne AI w IT.</p>
+      <p class="author">Autor: Robert</p>
+    </footer>
+  </div>
+
+  <script>
+    const form = document.querySelector('#paper-form');
+    const participantsInput = document.querySelector('#participants');
+    const sheetsInput = document.querySelector('#sheets');
+    const result = document.querySelector('#result');
+
+    function showResult(message, state) {
+      result.textContent = message;
+      result.dataset.state = state;
+      result.classList.remove('result-pop');
+      // Ponowne dodanie klasy uruchamia krótką animację także przy kolejnym obliczeniu.
+      void result.offsetWidth;
+      result.classList.add('result-pop');
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const participantsRaw = participantsInput.value.trim();
+      const sheetsRaw = sheetsInput.value.trim();
+
+      if (participantsRaw === '' || sheetsRaw === '') {
+        showResult('Uzupełnij oba pola, aby obliczyć liczbę kartek.', 'error');
+        return;
+      }
+
+      const participants = Number(participantsRaw);
+      const sheets = Number(sheetsRaw);
+      if (!Number.isInteger(participants) || participants < 0 || participants > 16) {
+        showResult('Błąd: liczba uczestników musi być liczbą całkowitą od 0 do 16.', 'error');
+        participantsInput.focus();
+        return;
+      }
+      if (!Number.isInteger(sheets) || sheets <= 0) {
+        showResult('Błąd: liczba kartek na osobę musi być dodatnią liczbą całkowitą.', 'error');
+        sheetsInput.focus();
+        return;
+      }
+      if (participants === 0) {
+        showResult('Nie trzeba drukować kartek.', 'success');
+        return;
+      }
+      showResult(`Potrzeba ${participants * sheets} ${participants * sheets === 1 ? 'kartki' : 'kartek'}.`, 'success');
+    });
+
+    // Wybór miejsca i terminu jest przechowywany lokalnie w tej przeglądarce.
+    // To prototyp front-endowy: zapis nie trafia na serwer i nie blokuje miejsc innym osobom.
+    const roomStage = document.querySelector('#room-stage');
+    const seatButtons = [...document.querySelectorAll('.seat:not(.taken)')];
+    const dateInput = document.querySelector('#event-date');
+    const timeInput = document.querySelector('#event-time');
+    const chosenSeat = document.querySelector('#chosen-seat');
+    const chosenDatetime = document.querySelector('#chosen-datetime');
+    const bookingMessage = document.querySelector('#booking-message');
+    const stickCursor = document.querySelector('#stick-cursor');
+    let selectedSeat = '';
+    let lastPointer = null;
+    let velocity = { x: 0, y: 0 };
+    let stickFrame = 0;
+
+    // Wczytaj poprzedni wybór, jeśli istnieje.
+    try {
+      const savedBooking = JSON.parse(localStorage.getItem('kolo-workshop-booking') || 'null');
+      if (savedBooking) {
+        if (savedBooking.date) dateInput.value = savedBooking.date;
+        if (savedBooking.time) timeInput.value = savedBooking.time;
+        if (savedBooking.seat && seatButtons.some(button => button.dataset.seat === savedBooking.seat)) {
+          selectedSeat = savedBooking.seat;
+          updateSeatSelection();
+        }
+      }
+    } catch (_) {
+      // Gdy przeglądarka blokuje localStorage, formularz nadal działa w bieżącej sesji.
+    }
+
+    function updateBookingSummary() {
+      chosenSeat.textContent = selectedSeat || 'Nie wybrano';
+      chosenDatetime.textContent = dateInput.value && timeInput.value
+        ? `${dateInput.value} · ${timeInput.value}`
+        : 'Wybierz datę i godzinę';
+    }
+    function setBookingMessage(message, state = '') {
+      bookingMessage.textContent = message;
+      bookingMessage.dataset.state = state;
+      bookingMessage.classList.remove('result-pop');
+      void bookingMessage.offsetWidth;
+      bookingMessage.classList.add('result-pop');
+    }
+    function updateSeatSelection() {
+      seatButtons.forEach(button => {
+        const isSelected = button.dataset.seat === selectedSeat;
+        button.classList.toggle('selected', isSelected);
+        button.setAttribute('aria-pressed', String(isSelected));
+        button.setAttribute('aria-label', `Miejsce ${button.dataset.seat}${isSelected ? ', wybrane' : ', wolne'}`);
+      });
+      updateBookingSummary();
+    }
+    seatButtons.forEach(button => button.addEventListener('click', () => {
+      selectedSeat = selectedSeat === button.dataset.seat ? '' : button.dataset.seat;
+      updateSeatSelection();
+      setBookingMessage(selectedSeat ? `Wybrano ${selectedSeat}. Uzupełnij termin i kliknij „Zapisz wybór”.` : 'Wybór miejsca został cofnięty.');
+    }));
+    dateInput.addEventListener('change', updateBookingSummary);
+    timeInput.addEventListener('change', updateBookingSummary);
+
+    document.querySelector('#reserve-seat').addEventListener('click', () => {
+      if (!selectedSeat) {
+        setBookingMessage('Najpierw wybierz wolne miejsce na planie sali.', 'error');
+        return;
+      }
+      if (!dateInput.value || !timeInput.value) {
+        setBookingMessage('Wybierz datę oraz godzinę warsztatu.', 'error');
+        (!dateInput.value ? dateInput : timeInput).focus();
+        return;
+      }
+      const booking = { seat: selectedSeat, date: dateInput.value, time: timeInput.value, savedAt: new Date().toISOString() };
+      try {
+        localStorage.setItem('kolo-workshop-booking', JSON.stringify(booking));
+        setBookingMessage(`Zapamiętano wybór: ${selectedSeat}, ${dateInput.value} o ${timeInput.value}. Dane są zapisane w tej przeglądarce.`, '');
+      } catch (_) {
+        setBookingMessage(`Wybór ${selectedSeat} i termin są ustawione do końca tej sesji, ale przeglądarka nie pozwoliła zapisać ich na później.`, 'error');
+      }
+    });
+    document.querySelector('#clear-seat').addEventListener('click', () => {
+      selectedSeat = '';
+      updateSeatSelection();
+      try { localStorage.removeItem('kolo-workshop-booking'); } catch (_) {}
+      setBookingMessage('Wyczyszczono wybór miejsca i zapisany termin.');
+    });
+    updateSeatSelection();
+
+    // Patyczak jest narysowany w SVG. Kończyny podążają za ruchem kursora
+    // z wygładzoną bezwładnością, zamiast przeskakiwać od razu do nowej pozycji.
+    const limbIds = ['stick-left-arm', 'stick-right-arm', 'stick-left-leg', 'stick-right-leg'];
+    const limbDefaults = [
+      { a: [36, 32], b: [22, 43], c: [15, 54] },
+      { a: [36, 32], b: [50, 43], c: [57, 54] },
+      { a: [36, 54], b: [25, 70], c: [22, 86] },
+      { a: [36, 54], b: [47, 70], c: [51, 86] }
+    ];
+    let target = { x: 0, y: 0 };
+    let current = { x: 0, y: 0 };
+    let previous = { x: 0, y: 0 };
+    let angles = [0, 0, 0, 0];
+    function animateStick() {
+      current.x += (target.x - current.x) * 0.22;
+      current.y += (target.y - current.y) * 0.22;
+      const dx = current.x - previous.x;
+      const dy = current.y - previous.y;
+      previous = { ...current };
+      const swing = Math.max(-1, Math.min(1, dx / 13));
+      const lift = Math.max(-1, Math.min(1, dy / 15));
+      const desired = [swing * 0.9 - lift * 0.18, swing * 0.9 + lift * 0.18, -swing * 0.65 + Math.max(0, -lift) * 0.35, swing * 0.65 + Math.max(0, -lift) * 0.35];
+      desired.forEach((value, index) => {
+        angles[index] += (value - angles[index]) * 0.16;
+        const part = document.getElementById(limbIds[index]);
+        const base = limbDefaults[index];
+        const angle = angles[index];
+        const cos = Math.cos(angle), sin = Math.sin(angle);
+        const rotatePoint = (point, origin) => {
+          const x = point[0] - origin[0], y = point[1] - origin[1];
+          return [origin[0] + x * cos - y * sin, origin[1] + x * sin + y * cos];
+        };
+        const mid = rotatePoint(base.b, base.a);
+        const end = rotatePoint(base.c, base.a);
+        part.setAttribute('d', `M${base.a[0]} ${base.a[1]} L${mid[0].toFixed(1)} ${mid[1].toFixed(1)} L${end[0].toFixed(1)} ${end[1].toFixed(1)}`);
+      });
+      if (roomStage.classList.contains('cursor-active')) stickFrame = requestAnimationFrame(animateStick);
+    }
+    roomStage.addEventListener('pointerenter', event => {
+      if (event.pointerType === 'touch' || matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(hover: none)').matches) return;
+      roomStage.classList.add('cursor-active');
+      const rect = roomStage.getBoundingClientRect();
+      target = { x: event.clientX - rect.left - 36, y: event.clientY - rect.top - 42 };
+      current = { ...target }; previous = { ...target };
+      stickCursor.style.transform = `translate(${target.x}px, ${target.y}px)`;
+      cancelAnimationFrame(stickFrame);
+      stickFrame = requestAnimationFrame(animateStick);
+    });
+    roomStage.addEventListener('pointermove', event => {
+      if (!roomStage.classList.contains('cursor-active')) return;
+      const rect = roomStage.getBoundingClientRect();
+      target = { x: event.clientX - rect.left - 36, y: event.clientY - rect.top - 42 };
+      stickCursor.style.transform = `translate(${target.x}px, ${target.y}px)`;
+    });
+    roomStage.addEventListener('pointerleave', () => {
+      roomStage.classList.remove('cursor-active');
+      cancelAnimationFrame(stickFrame);
+    });
+
+  </script>
+</body>
+</html>
